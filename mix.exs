@@ -58,7 +58,10 @@ defmodule ExRTCP.MixProject do
       extras: ["README.md"],
       source_ref: "v#{@version}",
       formatters: ["html"],
-      nest_modules_by_prefix: [ExRTCP]
+      nest_modules_by_prefix: [ExRTCP, ExRTCP.Packet],
+      groups_for_modules: [
+        Packets: [~r/ExRTCP\.Packet\./]
+      ]
     ]
   end
 end

@@ -2,15 +2,15 @@ defmodule ExRTCP.MixProject do
   use Mix.Project
 
   @version "0.1.0"
-  @source_url "https://github.com/elixir-webrtc/ex_rctp"
+  @source_url "https://github.com/elixir-webrtc/ex_rtcp"
 
   def project do
     [
-      app: :ex_rctp,
+      app: :ex_rtcp,
       version: @version,
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
-      description: "Implementation of RCTP protocol",
+      description: "Implementation of RTCP protocol",
       package: package(),
       deps: deps(),
 

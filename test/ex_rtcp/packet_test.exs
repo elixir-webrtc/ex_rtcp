@@ -60,5 +60,11 @@ defmodule ExRTCP.PacketTest do
                reason: nil
              } = packet
     end
+
+    test "packet with unknown type" do
+      bin = <<@version::2, 0::1, @count::5, 2::8, 0::16>>
+
+      assert {:error, :unknown_type} = Packet.decode(bin)
+    end
   end
 end

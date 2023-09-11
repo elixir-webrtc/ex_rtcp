@@ -49,6 +49,9 @@ defmodule ExRTCP.Packet do
 
   @doc """
   Decodes RTCP packet. Returns a struct representing the packet based on its type.
+
+  This function assumes that passed binary is a packet of valid length and
+  ignores `length` field in the header.
   """
   @spec decode(binary()) :: {:ok, struct()} | {:error, decode_error()}
   def decode(<<2::2, padding::1, count::5, type::8, _len::16, rest::binary>>) do

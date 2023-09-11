@@ -14,7 +14,7 @@ defmodule ExRTCP.CompoundPacket do
   padding is added by default, must be multiple of 4
   """
   @spec encode([struct()], padding: Packet.uint8()) :: binary()
-  def encode(_packets, opts \\ []) do
+  def encode(_packets, _opts \\ []) do
     # TODO
     <<>>
   end

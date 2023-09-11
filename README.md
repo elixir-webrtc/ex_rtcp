@@ -1,7 +1,7 @@
 # ExRTCP
 
 [![CI](https://img.shields.io/github/actions/workflow/status/elixir-webrtc/ex_rtcp/ci.yml?logo=github&label=CI)](https://github.com/elixir-webrtc/ex_rtcp/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/elixir-webrtc/ex_rtcp/graph/badge.svg?token=E98NHC8B00)](https://codecov.io/gh/elixir-webrtc/ex_rtcp)
+[![codecov](https://codecov.io/gh/elixir-webrtc/ex_rtcp/graph/badge.svg?token=0tlQeAdxhd)](https://codecov.io/gh/elixir-webrtc/ex_rtcp)
 
 Implementation of RTCP protocol in Elixir. 
 

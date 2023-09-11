@@ -3,12 +3,10 @@ defmodule ExRTCP.CompoundPacket do
   Functionalities for decoding and encoding compound RTCP packets.
   """
 
-  alias ExRTCP.Packet
-
   @doc """
   """
   @spec encode([struct()]) :: binary()
-  def encode(packets) do
+  def encode(_packets) do
     # TODO
     <<>>
   end
@@ -17,8 +15,8 @@ defmodule ExRTCP.CompoundPacket do
   """
   # TODO better type
   @spec decode(binary()) :: {:ok, [struct()]} | {:error, atom()}
-  def decode(raw) do
+  def decode(_raw) do
     # TODO
-    []
+    {:ok, []}
   end
 end

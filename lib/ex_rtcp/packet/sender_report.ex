@@ -3,7 +3,7 @@ defmodule ExRTCP.Packet.SenderReport do
 
   defstruct []
 
-  def decode(raw) do
+  def decode(_raw) do
     %__MODULE__{}
   end
 end

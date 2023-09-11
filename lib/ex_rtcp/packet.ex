@@ -8,7 +8,7 @@ defmodule ExRTCP.Packet do
   @type uint32() :: 0..4_294_967_295
 
   @typedoc """
-  Possible `decode/1` errors:
+  Possible `decode/1` errors.
 
     * `:invalid_packet` - this binary could not be parsed as a valid RTCP packet
     * `:unknown_type` - this type of RTCP packet is not supported or does not exist
@@ -23,14 +23,28 @@ defmodule ExRTCP.Packet do
   Options:
 
     * `padding` - number of padding bytes added to packet, no
-  padding is added by default
+  padding is added by default, must be multiple of 4
   """
   @spec encode(struct(), padding: uint8()) :: binary()
   def encode(packet, opts \\ [])
 
-  def encode(packet, opts) do
-    # TODO
-    <<>>
+  def encode(%module{} = packet, opts) do
+    {encoded, count, type} = module.encode(packet)
+
+    {pad?, padding} =
+      case Keyword.get(opts, :padding, 0) do
+        0 ->
+          {0, <<>>}
+
+        pad_len ->
+          if rem(pad_len, 4) != 0, do: raise("Padding length must be multiple of 4")
+          # TODO: refactor when formatter issue is resolved
+          {1, <<0::size(pad_len - 1)-unit(8), pad_len>>}
+      end
+
+    len = div(byte_size(encoded) + byte_size(padding), 4)
+
+    <<2::2, pad?::1, count::5, type::8, len::16, encoded::binary, padding::binary>>
   end
 
   @doc """
@@ -38,8 +52,9 @@ defmodule ExRTCP.Packet do
   """
   @spec decode(binary()) :: {:ok, struct()} | {:error, decode_error()}
   def decode(<<2::2, padding::1, count::5, type::8, _len::16, rest::binary>>) do
-    with {:ok, raw} <- if(padding == 1, do: strip_padding(rest), else: {:ok, rest}) do
-      decode_as(type, count, raw)
+    with {:ok, raw} <- if(padding == 1, do: strip_padding(rest), else: {:ok, rest}),
+         {:ok, module} <- get_type_module(type) do
+      module.decode(raw, count)
     end
   end
 
@@ -54,8 +69,8 @@ defmodule ExRTCP.Packet do
     end
   end
 
-  defp decode_as(200, _count, raw), do: __MODULE__.SenderReport.decode(raw)
-  defp decode_as(201, _count, raw), do: __MODULE__.ReceiverReport.decode(raw)
-  defp decode_as(203, count, raw), do: __MODULE__.Goodbye.decode(raw, count)
-  defp decode_as(_type, _count, _raw), do: {:error, :unknown_type}
+  defp get_type_module(200), do: {:ok, __MODULE__.SenderReport}
+  defp get_type_module(201), do: {:ok, __MODULE__.ReceiverReport}
+  defp get_type_module(203), do: {:ok, __MODULE__.Goodbye}
+  defp get_type_module(_type), do: {:error, :unknown_type}
 end

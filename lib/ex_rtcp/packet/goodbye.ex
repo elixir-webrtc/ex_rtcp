@@ -3,6 +3,8 @@ defmodule ExRTCP.Packet.Goodbye do
   Goodbye RTCP packet type (RFC 3550).
   """
 
+  @behaviour ExRTCP.PacketTranscoder
+
   alias ExRTCP.Packet
 
   @packet_type 203
@@ -18,8 +20,7 @@ defmodule ExRTCP.Packet.Goodbye do
   @enforce_keys [:sources]
   defstruct @enforce_keys ++ [reason: nil]
 
-  @doc false
-  @spec encode(t()) :: {binary(), non_neg_integer(), non_neg_integer()}
+  @impl true
   def encode(packet) do
     sources = encode_sources(packet.sources)
     reason = encode_reason(packet.reason)
@@ -47,8 +48,7 @@ defmodule ExRTCP.Packet.Goodbye do
     <<len::8, reason::binary, 0::pad_len*8>>
   end
 
-  @doc false
-  @spec decode(binary(), non_neg_integer()) :: {:ok, t()} | {:error, Packet.decode_error()}
+  @impl true
   def decode(raw, count) do
     with {:ok, sources, raw} <- decode_sources(raw, count),
          {:ok, reason} <- decode_reason(raw) do

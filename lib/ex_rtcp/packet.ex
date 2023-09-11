@@ -6,6 +6,12 @@ defmodule ExRTCP.Packet do
   @type uint8() :: 0..255
   @type uint16() :: 0..65_535
   @type uint32() :: 0..4_294_967_295
+  @type uint64() :: 0..18_446_744_073_709_551_615
+
+  @type packet() ::
+          __MODULE__.SenderReport.t()
+          | __MODULE__.ReceiverReport.t()
+          | __MODULE__.Goodbye.t()
 
   @typedoc """
   Possible `decode/1` errors.
@@ -25,7 +31,7 @@ defmodule ExRTCP.Packet do
     * `padding` - number of padding bytes added to packet, no
   padding is added by default, must be multiple of 4
   """
-  @spec encode(struct(), padding: uint8()) :: binary()
+  @spec encode(packet(), padding: uint8()) :: binary()
   def encode(packet, opts \\ [])
 
   def encode(%module{} = packet, opts) do
@@ -53,7 +59,7 @@ defmodule ExRTCP.Packet do
   This function assumes that passed binary is a packet of valid length and
   ignores `length` field in the header.
   """
-  @spec decode(binary()) :: {:ok, struct()} | {:error, decode_error()}
+  @spec decode(binary()) :: {:ok, packet()} | {:error, decode_error()}
   def decode(<<2::2, padding::1, count::5, type::8, _len::16, rest::binary>>) do
     with {:ok, raw} <- if(padding == 1, do: strip_padding(rest), else: {:ok, rest}),
          {:ok, module} <- get_type_module(type) do

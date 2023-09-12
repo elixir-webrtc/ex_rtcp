@@ -12,6 +12,7 @@ defmodule ExRTCP.Packet do
   @type packet() ::
           __MODULE__.SenderReport.t()
           | __MODULE__.ReceiverReport.t()
+          | __MODULE__.SourceDescription.t()
           | __MODULE__.Goodbye.t()
 
   @typedoc """
@@ -81,6 +82,7 @@ defmodule ExRTCP.Packet do
 
   defp get_type_module(200), do: {:ok, __MODULE__.SenderReport}
   defp get_type_module(201), do: {:ok, __MODULE__.ReceiverReport}
+  defp get_type_module(202), do: {:ok, __MODULE__.SourceDescription}
   defp get_type_module(203), do: {:ok, __MODULE__.Goodbye}
   defp get_type_module(_type), do: {:error, :unknown_type}
 end

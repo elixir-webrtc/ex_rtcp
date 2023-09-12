@@ -5,6 +5,9 @@ defmodule ExRTCP.Packet.ReceptionReport do
 
   alias ExRTCP.Packet
 
+  @typedoc """
+  Struct representing reception report present in Sender/Receiver Report RTCP packets.
+  """
   @type t() :: %__MODULE__{
           ssrc: Packet.uint32(),
           fraction_lost: Packet.uint8(),

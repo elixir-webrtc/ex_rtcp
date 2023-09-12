@@ -31,7 +31,7 @@ defmodule ExRTCP.Packet do
   Options:
 
     * `padding` - number of padding bytes added to packet, no
-  padding is added by default, must be multiple of 4
+  padding is added by default, must be multiple of 4, and smaller than 256
   """
   @spec encode(packet(), padding: uint8()) :: binary()
   def encode(packet, opts \\ [])
@@ -46,7 +46,6 @@ defmodule ExRTCP.Packet do
 
         pad_len ->
           if rem(pad_len, 4) != 0, do: raise("Padding length must be multiple of 4")
-          # TODO: refactor when formatter issue is resolved
           {1, <<0::size(pad_len - 1)-unit(8), pad_len>>}
       end
 

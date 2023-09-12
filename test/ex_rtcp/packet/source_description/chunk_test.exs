@@ -7,8 +7,8 @@ defmodule ExRTCP.Packet.SourceDescription.ChunkTest do
   @ssrc 0x37B8307F
 
   @text "12345"
-  @item %Item{type: :cname, text: @text}
-  @encoded_item <<1::8, byte_size(@text)::8, @text::binary>>
+  @item %Item{type: :email, text: @text}
+  @encoded_item <<3::8, byte_size(@text)::8, @text::binary>>
   @rest <<1, 2, 3, 4, 5, 6, 7, 8>>
 
   describe "encode/1" do

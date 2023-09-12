@@ -6,8 +6,8 @@ defmodule ExRTCP.Packet.SourceDescriptionTest do
   alias ExRTCP.Packet.SourceDescription.Chunk.Item
 
   @text "12345"
-  @item %Item{type: :cname, text: @text}
-  @encoded_item <<1::8, byte_size(@text)::8, @text::binary>>
+  @item %Item{type: :tool, text: @text}
+  @encoded_item <<6::8, byte_size(@text)::8, @text::binary>>
 
   @ssrc 0x37B8307F
   @chunk %Chunk{ssrc: @ssrc, items: [@item, @item]}

@@ -5,23 +5,33 @@ defmodule ExRTCP.CompoundPacket do
 
   alias ExRTCP.Packet
 
+  # TODO: add validate function
+
   @doc """
   Encodes the packets as a compound packet and returns the resulting binary.
 
   Options:
 
-    * `padding` - number of padding bytes added to the last packet, no
-  padding is added by default, must be multiple of 4
+    * `padding` - number of padding bytes added to the last packet,
+  must fulfill the same conditions as in `ExRTCP.Packet.encode/2`
   """
-  @spec encode([struct()], padding: Packet.uint8()) :: binary()
-  def encode(_packets, _opts \\ []) do
-    # TODO
-    <<>>
+  @spec encode([Packet.packet()], padding: Packet.uint8()) :: binary()
+  def encode(packets, opts \\ [])
+
+  def encode([], _opts), do: <<>>
+
+  def encode(packets, opts) do
+    padding = Keyword.get(opts, :padding, 0)
+    {last, packets} = List.pop_at(packets, -1)
+
+    decoded = for packet <- packets, do: Packet.encode(packet), into: <<>>
+    decoded <> Packet.encode(last, padding: padding)
   end
 
   @doc """
+  Decodes compound RTCP packet
   """
-  @spec decode(binary()) :: {:ok, [struct()]} | {:error, atom()}
+  @spec decode(binary()) :: {:ok, [Packet.packet()]} | {:error, Packet.decode_error()}
   def decode(raw) do
     case split_packets(raw) do
       {:error, _reason} = err -> err
@@ -37,13 +47,13 @@ defmodule ExRTCP.CompoundPacket do
     case get_packet(raw) do
       {:ok, :unknown_type, raw} -> split_packets(raw, acc)
       {:ok, packet, raw} -> split_packets(raw, [packet | acc])
-      {:error, :invalid_packet} -> {:error, :invalid_packet}
+      {:error, _reason} = err -> err
     end
   end
 
   defp get_packet(<<_::16, len::16, _::binary>> = raw) do
     case raw do
-      <<packet::binary-size(len * 4), rest::binary>> ->
+      <<packet::binary-size((len + 1) * 4), rest::binary>> ->
         case Packet.decode(packet) do
           {:ok, packet} -> {:ok, packet, rest}
           {:error, :unknown_type} -> {:ok, :unknown_type, rest}

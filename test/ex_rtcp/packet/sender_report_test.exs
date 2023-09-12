@@ -30,6 +30,48 @@ defmodule ExRTCP.Packet.SenderReportTest do
   @octet_count 11_324_123
   @profile_extension <<5, 5, 23, 8>>
 
+  describe "encode/1" do
+    test "packet without reports" do
+      packet = %SenderReport{
+        ssrc: @ssrc,
+        ntp_timestamp: @ntp_timestamp,
+        rtp_timestamp: @rtp_timestamp,
+        packet_count: @packet_count,
+        octet_count: @octet_count,
+        reports: [],
+        profile_extension: @profile_extension
+      }
+
+      assert {encoded, 0, 200} = SenderReport.encode(packet)
+
+      valid =
+        <<@ssrc::32, @ntp_timestamp::64, @rtp_timestamp::32, @packet_count::32, @octet_count::32,
+          @profile_extension::binary>>
+
+      assert encoded == valid
+    end
+
+    test "packet with report" do
+      packet = %SenderReport{
+        ssrc: @ssrc,
+        ntp_timestamp: @ntp_timestamp,
+        rtp_timestamp: @rtp_timestamp,
+        packet_count: @packet_count,
+        octet_count: @octet_count,
+        reports: [@decoded_report, @decoded_report],
+        profile_extension: @profile_extension
+      }
+
+      assert {encoded, 2, 200} = SenderReport.encode(packet)
+
+      valid =
+        <<@ssrc::32, @ntp_timestamp::64, @rtp_timestamp::32, @packet_count::32, @octet_count::32,
+          @report, @report, @profile_extension::binary>>
+
+      assert encoded == valid
+    end
+  end
+
   describe "decode/1" do
     test "packet without reports" do
       sender_report =

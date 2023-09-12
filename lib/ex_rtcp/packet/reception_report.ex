@@ -1,6 +1,6 @@
 defmodule ExRTCP.Packet.ReceptionReport do
   @moduledoc """
-  ReceptionReports carried by Sender/Receiver Report RTCP packets. 
+  Reception Reports carried by Sender/Receiver Report RTCP packets. 
   """
 
   alias ExRTCP.Packet
@@ -27,7 +27,30 @@ defmodule ExRTCP.Packet.ReceptionReport do
   defstruct @enforce_keys
 
   @doc false
-  @spec decode(binary(), non_neg_integer()) ::
+  @spec encode([t()], binary()) :: binary()
+  def encode(reports, acc \\ <<>>)
+
+  def encode([], acc), do: acc
+
+  def encode([report | rest], acc) do
+    %__MODULE__{
+      ssrc: ssrc,
+      fraction_lost: fraction_lost,
+      total_lost: total_lost,
+      highest_sequence_number: hsn,
+      jitter: jitter,
+      last_sr: last_sr,
+      delay: delay
+    } = report
+
+    encoded =
+      <<ssrc::32, fraction_lost::8, total_lost::24, hsn::32, jitter::32, last_sr::32, delay::32>>
+
+    encode(rest, <<encoded::binary, acc::binary>>)
+  end
+
+  @doc false
+  @spec decode(binary(), non_neg_integer(), [t()]) ::
           {:ok, [t()], binary()} | {:error, Packet.decode_error()}
   def decode(raw, count, acc \\ [])
 

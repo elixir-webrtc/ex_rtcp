@@ -25,6 +25,16 @@ defmodule ExRTCP.Packet.ReceptionReportTest do
     delay: @delay
   }
 
+  describe "encode/1" do
+    test "multiple reports" do
+      reports = [@decoded_report, @decoded_report]
+
+      encoded = ReceptionReport.encode(reports)
+
+      assert encoded == <<@report::binary, @report::binary>>
+    end
+  end
+
   describe "decode/2" do
     test "single report" do
       report = @report <> @profile_extension

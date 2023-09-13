@@ -50,5 +50,15 @@ defmodule ExRTCP.CompoundPacketTest do
 
       assert {:error, :invalid_packet} = CompoundPacket.decode(packet)
     end
+
+    test "packets with unknown type" do
+      packet_1 = <<2::2, 0::1, 0::5, 201::8, 1::16, @encoded_packet::binary>>
+      packet_2 = <<2::2, 0::1, 0::5, 199::8, 0::16>>
+      packet = <<packet_1::binary, packet_2::binary>>
+
+      assert {:ok, [decoded]} = CompoundPacket.decode(packet)
+
+      assert decoded == @packet
+    end
   end
 end

@@ -6,20 +6,20 @@ defmodule ExRTCP.Packet.ReceptionReportTest do
   @ssrc 0x37B8307F
   @fraction_lost 0b00000110
   @total_lost 341_241
-  @highest_sequence_number 44_321_412
+  @last_sequence_number 44_321_412
   @jitter 23_234
   @last_sr 123_123_123
   @delay 65_536
   @profile_extension <<5, 5, 23, 8>>
 
-  @report <<@ssrc::32, @fraction_lost::8, @total_lost::24, @highest_sequence_number::32,
-            @jitter::32, @last_sr::32, @delay::32>>
+  @report <<@ssrc::32, @fraction_lost::8, @total_lost::24, @last_sequence_number::32, @jitter::32,
+            @last_sr::32, @delay::32>>
 
   @decoded_report %ReceptionReport{
     ssrc: @ssrc,
     fraction_lost: @fraction_lost,
     total_lost: @total_lost,
-    highest_sequence_number: @highest_sequence_number,
+    last_sequence_number: @last_sequence_number,
     jitter: @jitter,
     last_sr: @last_sr,
     delay: @delay
@@ -61,7 +61,7 @@ defmodule ExRTCP.Packet.ReceptionReportTest do
 
     test "invalid reports" do
       invalid_report =
-        <<@ssrc::32, @fraction_lost::8, @total_lost::24, @highest_sequence_number::32>>
+        <<@ssrc::32, @fraction_lost::8, @total_lost::24, @last_sequence_number::32>>
 
       report = @report <> invalid_report
 

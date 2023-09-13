@@ -12,7 +12,7 @@ defmodule ExRTCP.Packet.ReceptionReport do
           ssrc: Packet.uint32(),
           fraction_lost: Packet.uint8(),
           total_lost: Packet.uint24(),
-          highest_sequence_number: Packet.uint32(),
+          last_sequence_number: Packet.uint32(),
           jitter: Packet.uint32(),
           last_sr: Packet.uint32(),
           delay: Packet.uint32()
@@ -22,7 +22,7 @@ defmodule ExRTCP.Packet.ReceptionReport do
     :ssrc,
     :fraction_lost,
     :total_lost,
-    :highest_sequence_number,
+    :last_sequence_number,
     :jitter,
     :last_sr,
     :delay
@@ -40,7 +40,7 @@ defmodule ExRTCP.Packet.ReceptionReport do
       ssrc: ssrc,
       fraction_lost: fraction_lost,
       total_lost: total_lost,
-      highest_sequence_number: hsn,
+      last_sequence_number: hsn,
       jitter: jitter,
       last_sr: last_sr,
       delay: delay
@@ -64,7 +64,7 @@ defmodule ExRTCP.Packet.ReceptionReport do
           ssrc::32,
           fraction_lost::8,
           total_lost::24,
-          highest_sequence_number::32,
+          last_sequence_number::32,
           jitter::32,
           last_sr::32,
           delay::32,
@@ -77,7 +77,7 @@ defmodule ExRTCP.Packet.ReceptionReport do
       ssrc: ssrc,
       fraction_lost: fraction_lost,
       total_lost: total_lost,
-      highest_sequence_number: highest_sequence_number,
+      last_sequence_number: last_sequence_number,
       jitter: jitter,
       last_sr: last_sr,
       delay: delay

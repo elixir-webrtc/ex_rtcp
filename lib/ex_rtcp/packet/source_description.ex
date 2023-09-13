@@ -36,7 +36,7 @@ defmodule ExRTCP.Packet.SourceDescription do
   end
 
   defp do_decode(raw, count, acc \\ [])
-  defp do_decode(<<>>, 0, acc), do: {:ok, acc}
+  defp do_decode(<<>>, 0, acc), do: {:ok, Enum.reverse(acc)}
   defp do_decode(<<>>, _count, _acc), do: {:error, :invalid_packet}
 
   defp do_decode(raw, count, acc) do

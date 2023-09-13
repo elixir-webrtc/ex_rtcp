@@ -16,8 +16,7 @@ defmodule ExRTCP.Packet.GoodbyeTest do
 
       assert {encoded, 3, 203} = Goodbye.encode(packet)
 
-      # order matters in the test, but not in general
-      bin = for i <- Enum.reverse(sources), do: <<i::32>>, into: <<>>
+      bin = for i <- sources, do: <<i::32>>, into: <<>>
 
       assert encoded == bin
     end
@@ -33,8 +32,7 @@ defmodule ExRTCP.Packet.GoodbyeTest do
 
       assert {encoded, 3, 203} = Goodbye.encode(packet)
 
-      # order matters in the test, but not in general
-      bin = for i <- Enum.reverse(sources), do: <<i::32>>, into: <<>>
+      bin = for i <- sources, do: <<i::32>>, into: <<>>
       bin = <<bin::binary, byte_size(reason)::8, reason::binary>>
 
       assert encoded == bin
@@ -51,8 +49,7 @@ defmodule ExRTCP.Packet.GoodbyeTest do
 
       assert {encoded, 3, 203} = Goodbye.encode(packet)
 
-      # order matters in the test, but not in general
-      bin = for i <- Enum.reverse(sources), do: <<i::32>>, into: <<>>
+      bin = for i <- sources, do: <<i::32>>, into: <<>>
       bin = <<bin::binary, byte_size(reason)::8, reason::binary, 0, 0>>
 
       assert encoded == bin

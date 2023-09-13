@@ -49,7 +49,7 @@ defmodule ExRTCP.Packet.ReceptionReport do
     encoded =
       <<ssrc::32, fraction_lost::8, total_lost::24, hsn::32, jitter::32, last_sr::32, delay::32>>
 
-    encode(rest, <<encoded::binary, acc::binary>>)
+    encode(rest, <<acc::binary, encoded::binary>>)
   end
 
   @doc false
@@ -57,7 +57,7 @@ defmodule ExRTCP.Packet.ReceptionReport do
           {:ok, [t()], binary()} | {:error, Packet.decode_error()}
   def decode(raw, count, acc \\ [])
 
-  def decode(raw, 0, acc), do: {:ok, acc, raw}
+  def decode(raw, 0, acc), do: {:ok, Enum.reverse(acc), raw}
 
   def decode(
         <<

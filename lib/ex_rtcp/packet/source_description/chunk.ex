@@ -41,7 +41,7 @@ defmodule ExRTCP.Packet.SourceDescription.Chunk do
 
   defp do_decode(<<0::8, rest::binary>>, acc) do
     rest = strip_zeros(rest)
-    {:ok, acc, rest}
+    {:ok, Enum.reverse(acc), rest}
   end
 
   defp do_decode(raw, acc) do

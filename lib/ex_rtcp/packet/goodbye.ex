@@ -32,7 +32,7 @@ defmodule ExRTCP.Packet.Goodbye do
   defp encode_sources([], acc), do: acc
 
   defp encode_sources([ssrc | rest], acc),
-    do: encode_sources(rest, <<ssrc::32, acc::binary>>)
+    do: encode_sources(rest, <<acc::binary, ssrc::32>>)
 
   defp encode_reason(nil), do: <<>>
 
@@ -61,7 +61,7 @@ defmodule ExRTCP.Packet.Goodbye do
   end
 
   defp decode_sources(raw, count, acc \\ [])
-  defp decode_sources(raw, 0, acc), do: {:ok, acc, raw}
+  defp decode_sources(raw, 0, acc), do: {:ok, Enum.reverse(acc), raw}
 
   defp decode_sources(<<ssrc::32, rest::binary>>, count, acc),
     do: decode_sources(rest, count - 1, [ssrc | acc])

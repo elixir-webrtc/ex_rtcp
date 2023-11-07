@@ -1,6 +1,6 @@
 defmodule ExRTCP.Packet.ReceiverReport do
   @moduledoc """
-  Receiver Report RTCP packet type (RFC 3550).
+  Receiver Report RTCP packet type (`RFC 3550`).
   """
 
   alias ExRTCP.Packet

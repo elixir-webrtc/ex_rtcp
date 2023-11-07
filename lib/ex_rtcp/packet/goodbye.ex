@@ -1,6 +1,6 @@
 defmodule ExRTCP.Packet.Goodbye do
   @moduledoc """
-  Goodbye RTCP packet type (RFC 3550).
+  Goodbye RTCP packet type (`RFC 3550`).
   """
 
   @behaviour ExRTCP.PacketTranscoder

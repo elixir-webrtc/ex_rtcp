@@ -1,6 +1,6 @@
 defmodule ExRTCP.Packet.SourceDescription do
   @moduledoc """
-  Source Description RTCP packet type (RFC 3550).
+  Source Description RTCP packet type (`RFC 3550`).
   """
 
   @behaviour ExRTCP.PacketTranscoder

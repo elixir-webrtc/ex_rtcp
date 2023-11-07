@@ -1,6 +1,6 @@
 defmodule ExRTCP.Packet.SenderReport do
   @moduledoc """
-  Sender Report RTCP packet type (RFC 3550).
+  Sender Report RTCP packet type (`RFC 3550`).
   """
 
   @behaviour ExRTCP.PacketTranscoder

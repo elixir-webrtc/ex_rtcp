@@ -19,13 +19,20 @@ defmodule ExRTCP.Packet.SourceDescription.Chunk.ItemTest do
       assert encoded == valid
     end
 
-    test "items with different types" do
+    test "items with different types (RFC 3550)" do
       types = [:cname, :name, :email, :phone, :location, :tool, :note, :priv]
 
       for {i, item_type} <- Enum.with_index(types, fn e, i -> {i + 1, e} end) do
         item = %Item{type: item_type, text: ""}
         assert <<^i::8, 0::8>> = Item.encode(item)
       end
+    end
+
+    test "MID item" do
+      mid = "1234"
+      mid_len = byte_size(mid)
+      item = %Item{type: :mid, text: mid}
+      assert <<15, ^mid_len, ^mid::binary>> = Item.encode(item)
     end
   end
 
@@ -41,13 +48,20 @@ defmodule ExRTCP.Packet.SourceDescription.Chunk.ItemTest do
              } = decoded
     end
 
-    test "items with different types" do
+    test "items with different types (RFC 3550)" do
       types = [:cname, :name, :email, :phone, :location, :tool, :note, :priv]
 
       for {i, item_type} <- Enum.with_index(types, fn e, i -> {i + 1, e} end) do
         item = <<i::8, 0::8>>
         assert {:ok, %Item{type: ^item_type}, <<>>} = Item.decode(item)
       end
+    end
+
+    test "MID item" do
+      mid = <<1, 2, 3>>
+      item = <<15, byte_size(mid), mid::binary>>
+
+      assert {:ok, %Item{type: :mid, text: ^mid}, <<>>} = Item.decode(item)
     end
 
     test "invalid item" do

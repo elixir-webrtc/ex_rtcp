@@ -1,6 +1,9 @@
 defmodule ExRTCP.Packet.SourceDescription.Chunk.Item do
   @moduledoc """
   Item contained by chunks in Source Description RTCP packets.
+
+  Includes items specified by `RFC 3550` as well as the MID SDES item
+  specified in `RFC 8843`.
   """
 
   alias ExRTCP.Packet
@@ -14,6 +17,7 @@ defmodule ExRTCP.Packet.SourceDescription.Chunk.Item do
           | :tool
           | :note
           | :priv
+          | :mid
 
   @typedoc """
   Struct representing item contained by chunks in Source Description RTCP packets.
@@ -44,6 +48,7 @@ defmodule ExRTCP.Packet.SourceDescription.Chunk.Item do
   defp type_to_id(:tool), do: 6
   defp type_to_id(:note), do: 7
   defp type_to_id(:priv), do: 8
+  defp type_to_id(:mid), do: 15
 
   @doc false
   @spec decode(binary()) :: {:ok, t(), binary()} | {:error, Packet.decode_error()}
@@ -67,5 +72,6 @@ defmodule ExRTCP.Packet.SourceDescription.Chunk.Item do
   defp id_to_type(6), do: :tool
   defp id_to_type(7), do: :note
   defp id_to_type(8), do: :priv
+  defp id_to_type(15), do: :mid
   defp id_to_type(_other), do: nil
 end

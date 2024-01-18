@@ -5,7 +5,7 @@ defmodule ExRTCP.PacketTest do
   alias ExRTCP.Packet.Goodbye
 
   @version 2
-  # empty Goodbye packet 
+  # empty Goodbye packet
   @packet_type 203
   @count 0
 
@@ -48,8 +48,8 @@ defmodule ExRTCP.PacketTest do
     end
 
     test "packet with padding" do
-      bin = <<@version::2, 1::1, @count::5, @packet_type::8, 0::16>>
-      padding = <<0::5*8, 6>>
+      bin = <<@version::2, 1::1, @count::5, @packet_type::8, 1::16>>
+      padding = <<0::3*8, 4>>
 
       bin = bin <> padding
 

@@ -29,7 +29,7 @@ defmodule ExRTCP.CompoundPacket do
   end
 
   @doc """
-  Decodes compound RTCP packet
+  Decodes compound RTCP packet.
   """
   @spec decode(binary()) :: {:ok, [Packet.packet()]} | {:error, Packet.decode_error()}
   def decode(raw) do

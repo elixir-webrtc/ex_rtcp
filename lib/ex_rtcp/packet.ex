@@ -4,7 +4,9 @@ defmodule ExRTCP.Packet do
   """
 
   @type uint8() :: 0..255
+  @type uint13() :: 0..8191
   @type uint16() :: 0..65_535
+  @type int24() :: -8_388_608..8_388_607
   @type uint24() :: 0..16_777_216
   @type uint32() :: 0..4_294_967_295
   @type uint64() :: 0..18_446_744_073_709_551_615
@@ -79,9 +81,10 @@ defmodule ExRTCP.Packet do
     end
   end
 
-  defp get_type_module(200), do: {:ok, __MODULE__.SenderReport}
-  defp get_type_module(201), do: {:ok, __MODULE__.ReceiverReport}
-  defp get_type_module(202), do: {:ok, __MODULE__.SourceDescription}
-  defp get_type_module(203), do: {:ok, __MODULE__.Goodbye}
-  defp get_type_module(_type), do: {:error, :unknown_type}
+  defp get_type_module(200, _count), do: {:ok, __MODULE__.SenderReport}
+  defp get_type_module(201, _count), do: {:ok, __MODULE__.ReceiverReport}
+  defp get_type_module(202, _count), do: {:ok, __MODULE__.SourceDescription}
+  defp get_type_module(203, _count), do: {:ok, __MODULE__.Goodbye}
+  defp get_type_module(205, 15), do: {:ok, __MODULE__.TransportFeedback.CC}
+  defp get_type_module(_type, _count), do: {:error, :unknown_type}
 end

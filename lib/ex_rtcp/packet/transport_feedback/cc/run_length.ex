@@ -22,7 +22,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.RunLength do
   defstruct @enforce_keys
 
   @doc false
-  @spec decode(binary()) :: {:ok, t(), [non_neg_integer()], binary()} | {:error, :invalid_packet}
+  @spec decode(binary()) :: {:ok, t(), [float()], binary()} | {:error, :invalid_packet}
   def decode(<<0::1, raw_symbol::2, run_length::13, rest::binary>>) do
     status_symbol = CC.get_status_symbol(raw_symbol)
 
@@ -49,13 +49,13 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.RunLength do
   defp parse_deltas(:small_delta, raw, 0, acc), do: {:ok, acc, raw}
 
   defp parse_deltas(:small_delta, <<delta::8, rest::binary>>, count, acc) do
-    parse_deltas(:small_delta, rest, count - 1, [delta | acc])
+    parse_deltas(:small_delta, rest, count - 1, [delta * 0.25 | acc])
   end
 
   defp parse_deltas(:large_delta, raw, 0, acc), do: {:ok, acc, raw}
 
   defp parse_deltas(:large_delta, <<delta::16, rest::binary>>, count, acc) do
-    parse_deltas(:large_delta, rest, count - 1, [delta | acc])
+    parse_deltas(:large_delta, rest, count - 1, [delta * 0.25 | acc])
   end
 
   defp parse_deltas(_symbol, _raw, _count, _acc), do: {:error, :invalid_packet}

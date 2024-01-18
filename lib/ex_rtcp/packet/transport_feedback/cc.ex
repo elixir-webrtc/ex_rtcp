@@ -19,16 +19,22 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
   @typedoc """
   Struct representing Transport-wide Congestion Control
   Feedback RTCP packet.
+
+  Be aware that `reference_time` and `recv_deltas` values are converted
+  to/from milliseconds when decoding/encoding. Refer to
+  `draft-holmer-rmcat-transport-wide-cc-extensions-01`, sec. 3 to see
+  what values are considered valid. Trying to encode a packet with invalid values
+  will result in an undefined behaviour.
   """
   @type t() :: %__MODULE__{
           sender_ssrc: Packet.uint32(),
           media_ssrc: Packet.uint32(),
           base_sequence_number: Packet.uint16(),
           packet_status_count: Packet.uint16(),
-          reference_time: Packet.int24(),
+          reference_time: integer(),
           fb_pkt_count: Packet.uint8(),
           packet_chunks: [RunLength.t() | StatusVector.t()],
-          recv_deltas: [non_neg_integer()]
+          recv_deltas: [float()]
         }
 
   @enforce_keys [
@@ -70,13 +76,13 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
         >>,
         _count
       ) do
-    with {:ok, chunks, deltas} <- parse_chunks(rest, packet_status_count) do
+    with {:ok, chunks, deltas} <- decode_chunks(rest, packet_status_count) do
       packet = %__MODULE__{
         sender_ssrc: sender_ssrc,
         media_ssrc: media_ssrc,
         base_sequence_number: base_sequence_number,
         packet_status_count: packet_status_count,
-        reference_time: reference_time,
+        reference_time: reference_time * 64,
         fb_pkt_count: fb_pkt_count,
         packet_chunks: chunks,
         recv_deltas: deltas
@@ -88,15 +94,15 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
 
   def decode(_raw, _count), do: {:error, :invalid_packet}
 
-  defp parse_chunks(raw, count, chunks \\ [], deltas \\ [])
+  defp decode_chunks(raw, count, chunks \\ [], deltas \\ [])
 
   # in theory, after chunks are processed, count should be 0
   # but we also accept values < 0 (so when there's more packets than header suggests)
   # we also ignore anything after the last chunk, which normally would be padded to 32 bit boundary
-  defp parse_chunks(_raw, count, chunks, deltas) when count <= 0,
+  defp decode_chunks(_raw, count, chunks, deltas) when count <= 0,
     do: {:ok, Enum.reverse(chunks), Enum.reverse(deltas)}
 
-  defp parse_chunks(<<type::1, _rest::bitstring>> = raw, count, chunks, deltas) do
+  defp decode_chunks(<<type::1, _rest::bitstring>> = raw, count, chunks, deltas) do
     module =
       case type do
         0 -> RunLength
@@ -110,9 +116,9 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
           %StatusVector{symbols: s} -> length(s)
         end
 
-      parse_chunks(rest, count - count_diff, [chunk | chunks], chunk_deltas ++ deltas)
+      decode_chunks(rest, count - count_diff, [chunk | chunks], chunk_deltas ++ deltas)
     end
   end
 
-  defp parse_chunks(_raw, _count, _chunks, _deltas), do: {:error, :invalid_packet}
+  defp decode_chunks(_raw, _count, _chunks, _deltas), do: {:error, :invalid_packet}
 end

@@ -30,8 +30,8 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.RunLengthTest do
     end
 
     test "chunk with `small_delta` symbols" do
-      deltas = for i <- 1..@run_length, do: rem(i, 137)
-      deltas_raw = for delta <- deltas, do: <<delta>>, into: <<>>
+      deltas = for _ <- 1..@run_length, do: 16.0
+      deltas_raw = for delta <- deltas, do: <<trunc(delta * 4)>>, into: <<>>
       raw = <<0::1, 1::2, @run_length::13, deltas_raw::binary, @rest::binary>>
 
       rev_deltas = Enum.reverse(deltas)
@@ -44,8 +44,8 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.RunLengthTest do
     end
 
     test "chunk with `large_delta` symbols" do
-      deltas = for i <- 1..@run_length, do: i
-      deltas_raw = for delta <- deltas, do: <<delta::16>>, into: <<>>
+      deltas = for _ <- 1..@run_length, do: 20.0
+      deltas_raw = for delta <- deltas, do: <<trunc(delta * 4)::16>>, into: <<>>
       raw = <<0::1, 2::2, @run_length::13, deltas_raw::binary, @rest::binary>>
 
       rev_deltas = Enum.reverse(deltas)

@@ -8,7 +8,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVectorTest do
   describe "decode/1" do
     test "chunk with one-bit symbols" do
       symbols_raw = <<0::1, 1::1, 1::1, 0::5, 1::1, 1::1, 0::4>>
-      deltas_raw = <<111, 88, 74, 23>>
+      deltas_raw = <<112, 88, 74, 47>>
       raw = <<1::1, 0::1, symbols_raw::bitstring, deltas_raw::binary, @rest::binary>>
 
       symbols =
@@ -19,7 +19,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVectorTest do
           end
         end
 
-      deltas = [23, 74, 88, 111]
+      deltas = [11.75, 18.5, 22.0, 28.0]
 
       assert {:ok, chunk, ^deltas, @rest} = StatusVector.decode(raw)
       assert %StatusVector{symbols: ^symbols} = chunk
@@ -40,7 +40,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVectorTest do
           end
         end
 
-      deltas = [2421, 1500, 88]
+      deltas = [605.25, 375.0, 22.0]
 
       assert {:ok, chunk, ^deltas, @rest} = StatusVector.decode(raw)
       assert %StatusVector{symbols: ^symbols} = chunk

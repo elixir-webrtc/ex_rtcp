@@ -20,7 +20,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVector do
   defstruct @enforce_keys
 
   @doc false
-  @spec decode(binary()) :: {:ok, t(), [non_neg_integer()], binary()} | {:error, :invalid_packet}
+  @spec decode(binary()) :: {:ok, t(), [float()], binary()} | {:error, :invalid_packet}
   def decode(<<1::1, symbol_size::1, symbols::bitstring-14, rest::binary>>) do
     symbols =
       for <<raw_symbol::size(symbol_size + 1) <- symbols>> do
@@ -52,7 +52,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVector do
 
     case raw do
       <<delta::size(delta_size), rest::binary>> ->
-        parse_deltas(symbols, rest, [delta | acc])
+        parse_deltas(symbols, rest, [delta * 0.25 | acc])
 
       _other ->
         {:error, :invalid_packet}

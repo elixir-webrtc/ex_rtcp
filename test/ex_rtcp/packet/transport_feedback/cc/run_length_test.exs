@@ -18,6 +18,17 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.RunLengthTest do
              } = chunk
     end
 
+    test "chunk with `no_delta` symbols" do
+      raw = <<0::1, 3::2, @run_length::13, @rest::binary>>
+
+      assert {:ok, chunk, [], @rest} = RunLength.decode(raw)
+
+      assert %RunLength{
+               status_symbol: :no_delta,
+               run_length: @run_length
+             } = chunk
+    end
+
     test "chunk with `small_delta` symbols" do
       deltas = for i <- 1..@run_length, do: rem(i, 137)
       deltas_raw = for delta <- deltas, do: <<delta>>, into: <<>>
@@ -44,11 +55,6 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.RunLengthTest do
                status_symbol: :large_delta,
                run_length: @run_length
              } = chunk
-    end
-
-    test "chunk with invalid symbol" do
-      raw = <<0::1, 3::2, @run_length::13, @rest::binary>>
-      assert {:error, :invalid_packet} = RunLength.decode(raw)
     end
 
     test "chunk too short" do

@@ -11,8 +11,10 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
   Status of reported packets.
 
   See `draft-holmer-rmcat-transport-wide-cc-extensions-01`, sec. 3.1.1 for further explanation.
+  Notice that this RFC section lists `11` value as *RESERVED*, but it is used in further
+  examples as *packet received, w/o timestamp*, thus we treat it as a valid value.
   """
-  @type status_symbol() :: :not_received | :small_delta | :large_delta
+  @type status_symbol() :: :not_received | :no_delta | :small_delta | :large_delta
 
   @typedoc """
   Struct representing Transport-wide Congestion Control
@@ -44,11 +46,11 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
   @behaviour ExRTCP.PacketTranscoder
 
   @doc false
-  @spec get_status_symbol(0..2) :: {:ok, status_symbol()} | {:error, :invalid_packet}
-  def get_status_symbol(0b00), do: {:ok, :not_received}
-  def get_status_symbol(0b01), do: {:ok, :small_delta}
-  def get_status_symbol(0b10), do: {:ok, :large_delta}
-  def get_status_symbol(_other), do: {:error, :invalid_packet}
+  @spec get_status_symbol(0..3) :: status_symbol()
+  def get_status_symbol(0b00), do: :not_received
+  def get_status_symbol(0b01), do: :small_delta
+  def get_status_symbol(0b10), do: :large_delta
+  def get_status_symbol(0b11), do: :no_delta
 
   @impl true
   def encode(%__MODULE__{}) do

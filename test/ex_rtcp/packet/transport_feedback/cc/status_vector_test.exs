@@ -26,7 +26,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVectorTest do
     end
 
     test "chunk with two-bit symbols" do
-      symbols_raw = <<0::2, 1::2, 0::2, 2::2, 2::2, 0::4>>
+      symbols_raw = <<0::2, 1::2, 0::2, 2::2, 2::2, 0::2, 3::2>>
       deltas_raw = <<88, 1500::16, 2421::16>>
       raw = <<1::1, 1::1, symbols_raw::bitstring, deltas_raw::binary, @rest::binary>>
 
@@ -36,6 +36,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVectorTest do
             0 -> :not_received
             1 -> :small_delta
             2 -> :large_delta
+            3 -> :no_delta
           end
         end
 
@@ -43,12 +44,6 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVectorTest do
 
       assert {:ok, chunk, ^deltas, @rest} = StatusVector.decode(raw)
       assert %StatusVector{symbols: ^symbols} = chunk
-    end
-
-    test "chunk with invalid symbols" do
-      symbols_raw = <<3::2, 0::12>>
-      raw = <<1::1, 1::1, symbols_raw::bitstring, @rest::binary>>
-      assert {:error, :invalid_packet} = StatusVector.decode(raw)
     end
 
     test "chunk too short" do

@@ -21,10 +21,19 @@ defmodule ExRTCP.Packet.TransportFeedback.CCTest do
       deltas_1 = for <<i <- raw_deltas_1>>, do: i
 
       # status vector chunk (mixed packets, two-bit symbols)
-      raw_chunk_2 = <<1::1, 1::1, 2::2, 1::2, 2::2, 0::8>>
+      raw_chunk_2 = <<1::1, 1::1, 2::2, 1::2, 2::2, 0::4, 3::2, 3::2>>
       raw_deltas_2 = <<1234::16, 109, 5501::16>>
 
-      symbols = [:large_delta, :small_delta, :large_delta] ++ List.duplicate(:not_received, 4)
+      symbols = [
+        :large_delta,
+        :small_delta,
+        :large_delta,
+        :not_received,
+        :not_received,
+        :no_delta,
+        :no_delta
+      ]
+
       chunk_2 = %StatusVector{symbols: symbols}
       deltas_2 = [1234, 109, 5501]
 

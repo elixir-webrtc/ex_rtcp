@@ -7,6 +7,9 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
   alias __MODULE__.{RunLength, StatusVector}
   alias ExRTCP.Packet
 
+  @packet_type 205
+  @feedback_type 15
+
   @typedoc """
   Status of reported packets.
 
@@ -58,9 +61,57 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
   def get_status_symbol(0b10), do: :large_delta
   def get_status_symbol(0b11), do: :no_delta
 
+  @doc false
+  @spec get_status_raw(status_symbol()) :: 0..3
+  def get_status_raw(:not_received), do: 0b00
+  def get_status_raw(:small_delta), do: 0b01
+  def get_status_raw(:large_delta), do: 0b10
+  def get_status_raw(:no_delta), do: 0b11
+
   @impl true
-  def encode(%__MODULE__{}) do
-    {<<>>, 0, 0}
+  def encode(packet) do
+    %__MODULE__{
+      sender_ssrc: sender_ssrc,
+      media_ssrc: media_ssrc,
+      base_sequence_number: base_sequence_number,
+      packet_status_count: packet_status_count,
+      reference_time: reference_time,
+      fb_pkt_count: fb_pkt_count,
+      packet_chunks: packet_chunks,
+      recv_deltas: recv_deltas
+    } = packet
+
+    chunks = encode_chunks(packet_chunks, recv_deltas)
+    # reference_time should be interpreted as multiple of 64 ms
+    ref_time = div(reference_time, 64)
+
+    encoded = <<
+      sender_ssrc::32,
+      media_ssrc::32,
+      base_sequence_number::16,
+      packet_status_count::16,
+      ref_time::signed-24,
+      fb_pkt_count::8,
+      chunks::binary
+    >>
+
+    padding =
+      if rem(byte_size(encoded), 4) == 0 do
+        <<>>
+      else
+        <<0::unit(8)-size(4 - rem(byte_size(encoded), 4))>>
+      end
+
+    {encoded <> padding, @feedback_type, @packet_type}
+  end
+
+  defp encode_chunks(chunks, deltas, acc \\ <<>>)
+  defp encode_chunks([], _deltas, acc), do: acc
+
+  defp encode_chunks([chunk | chunks], deltas, acc) do
+    %module{} = chunk
+    {raw_chunk, rest_deltas} = module.encode(chunk, deltas)
+    encode_chunks(chunks, rest_deltas, acc <> raw_chunk)
   end
 
   @impl true

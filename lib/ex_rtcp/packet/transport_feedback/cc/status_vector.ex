@@ -9,6 +9,8 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVector do
   @typedoc """
   Struct representing the Status Vector chunk.
 
+  `symbols` list length must be equal to either `7` or `14`.
+
   See `draft-holmer-rmcat-transport-wide-cc-extensions-01`,
   sec. 3.1.4 for further explanation.
   """
@@ -18,6 +20,47 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVector do
 
   @enforce_keys [:symbols]
   defstruct @enforce_keys
+
+  @doc false
+  @spec encode(t(), [float()]) :: {binary(), [float()]}
+  def encode(%__MODULE__{symbols: symbols}, deltas) do
+    symbol_size =
+      case length(symbols) do
+        14 -> 0
+        7 -> 1
+      end
+
+    raw_symbols =
+      for symbol <- symbols, into: <<>> do
+        <<CC.get_status_raw(symbol)::size(symbol_size + 1)>>
+      end
+
+    raw_chunk = <<1::1, symbol_size::1, raw_symbols::bitstring>>
+    {raw_deltas, rest_deltas} = encode_deltas(symbols, deltas)
+
+    {raw_chunk <> raw_deltas, rest_deltas}
+  end
+
+  defp encode_deltas(symbols, deltas, acc \\ <<>>)
+  defp encode_deltas([], deltas, acc), do: {acc, deltas}
+
+  defp encode_deltas([symbol | symbols], deltas, acc)
+       when symbol in [:not_received, :no_delta],
+       do: encode_deltas(symbols, deltas, acc)
+
+  defp encode_deltas([:small_delta | symbols], [delta | deltas], acc) do
+    raw_delta = trunc(delta * 4)
+    if raw_delta > 255, do: raise("Delta #{delta} is too big to fit in 1 byte")
+
+    encode_deltas(symbols, deltas, <<acc::binary, raw_delta>>)
+  end
+
+  defp encode_deltas([:large_delta | symbols], [delta | deltas], acc) do
+    raw_delta = trunc(delta * 4)
+    if raw_delta > 65_535, do: raise("Delta #{delta} is too big to fit in 2 bytes")
+
+    encode_deltas(symbols, deltas, <<acc::binary, raw_delta::16>>)
+  end
 
   @doc false
   @spec decode(binary()) :: {:ok, t(), [float()], binary()} | {:error, :invalid_packet}

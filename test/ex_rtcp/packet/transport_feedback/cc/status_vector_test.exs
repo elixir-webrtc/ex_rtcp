@@ -5,6 +5,62 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVectorTest do
 
   @rest <<1, 6, 7, 8>>
 
+  describe "encode/2" do
+    test "chunk with one-bit symbols" do
+      symbols_raw = <<0::1, 1::1, 1::1, 0::5, 1::1, 1::1, 0::4>>
+
+      symbols =
+        for <<s::1 <- symbols_raw>> do
+          case s do
+            0 -> :not_received
+            1 -> :small_delta
+          end
+        end
+
+      deltas = [28.0, 22.0, 18.5, 11.75]
+      deltas_raw = <<112, 88, 74, 47>>
+      rest_deltas = [33.25, 13.75]
+      chunk = %StatusVector{symbols: symbols}
+
+      {raw, ^rest_deltas} = StatusVector.encode(chunk, deltas ++ rest_deltas)
+
+      assert <<
+               1::1,
+               0::1,
+               symbols_raw::bitstring,
+               deltas_raw::binary
+             >> == raw
+    end
+
+    test "chunk with two-bit symbols" do
+      symbols_raw = <<0::2, 1::2, 0::2, 2::2, 2::2, 0::2, 3::2>>
+
+      symbols =
+        for <<s::2 <- symbols_raw>> do
+          case s do
+            0 -> :not_received
+            1 -> :small_delta
+            2 -> :large_delta
+            3 -> :no_delta
+          end
+        end
+
+      deltas = [22.0, 375.0, 605.25]
+      deltas_raw = <<88, 1500::16, 2421::16>>
+      rest_deltas = [33.25, 13.75]
+      chunk = %StatusVector{symbols: symbols}
+
+      {raw, ^rest_deltas} = StatusVector.encode(chunk, deltas ++ rest_deltas)
+
+      assert <<
+               1::1,
+               1::1,
+               symbols_raw::bitstring,
+               deltas_raw::binary
+             >> == raw
+    end
+  end
+
   describe "decode/1" do
     test "chunk with one-bit symbols" do
       symbols_raw = <<0::1, 1::1, 1::1, 0::5, 1::1, 1::1, 0::4>>

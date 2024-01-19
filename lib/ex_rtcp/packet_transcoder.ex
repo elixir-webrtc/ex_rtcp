@@ -6,7 +6,7 @@ defmodule ExRTCP.PacketTranscoder do
   @type count() :: 0..31
 
   # Takes struct defined by module implementing this behaviour.
-  # Returns `{encoded packet (w/o header), count (to decode in the header), packet type}`
+  # Returns `{encoded packet (w/o header), count (to encode in the header), packet type}`
   @callback encode(struct()) :: {binary(), count(), Packet.uint8()}
 
   # Takes encoded packet (w/o header) and count (from packet header)

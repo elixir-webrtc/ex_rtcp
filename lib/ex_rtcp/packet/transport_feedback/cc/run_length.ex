@@ -22,6 +22,43 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.RunLength do
   defstruct @enforce_keys
 
   @doc false
+  @spec encode(t(), [float()]) :: {binary(), [float()]}
+  def encode(chunk, deltas) do
+    %__MODULE__{
+      status_symbol: status_symbol,
+      run_length: run_length
+    } = chunk
+
+    raw_status = CC.get_status_raw(status_symbol)
+    raw_chunk = <<0::1, raw_status::2, run_length::13>>
+    {raw_deltas, rest_deltas} = encode_deltas(status_symbol, run_length, deltas)
+
+    {raw_chunk <> raw_deltas, rest_deltas}
+  end
+
+  defp encode_deltas(symbol, count, deltas, acc \\ <<>>)
+
+  defp encode_deltas(symbol, _count, deltas, _acc)
+       when symbol in [:not_received, :no_delta],
+       do: {<<>>, deltas}
+
+  defp encode_deltas(_symbol, 0, deltas, acc), do: {acc, deltas}
+
+  defp encode_deltas(:small_delta, count, [delta | deltas], acc) do
+    raw_delta = trunc(delta * 4)
+    if raw_delta > 255, do: raise("Delta #{delta} is too big to fit in 1 byte")
+
+    encode_deltas(:small_delta, count - 1, deltas, <<acc::binary, raw_delta>>)
+  end
+
+  defp encode_deltas(:large_delta, count, [delta | deltas], acc) do
+    raw_delta = trunc(delta * 4)
+    if raw_delta > 65_535, do: raise("Delta #{delta} is too big to fit in 2 bytes")
+
+    encode_deltas(:large_delta, count - 1, deltas, <<acc::binary, raw_delta::16>>)
+  end
+
+  @doc false
   @spec decode(binary()) :: {:ok, t(), [float()], binary()} | {:error, :invalid_packet}
   def decode(<<0::1, raw_symbol::2, run_length::13, rest::binary>>) do
     status_symbol = CC.get_status_symbol(raw_symbol)

@@ -45,17 +45,15 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.RunLength do
   defp encode_deltas(_symbol, 0, deltas, acc), do: {acc, deltas}
 
   defp encode_deltas(:small_delta, count, [delta | deltas], acc) do
-    raw_delta = trunc(delta * 4)
-    if raw_delta > 255, do: raise("Delta #{delta} is too big to fit in 1 byte")
+    if delta > 255, do: raise("Delta #{delta} is too big to fit in 1 byte")
 
-    encode_deltas(:small_delta, count - 1, deltas, <<acc::binary, raw_delta>>)
+    encode_deltas(:small_delta, count - 1, deltas, <<acc::binary, delta>>)
   end
 
   defp encode_deltas(:large_delta, count, [delta | deltas], acc) do
-    raw_delta = trunc(delta * 4)
-    if raw_delta > 65_535, do: raise("Delta #{delta} is too big to fit in 2 bytes")
+    if delta > 65_535, do: raise("Delta #{delta} is too big to fit in 2 bytes")
 
-    encode_deltas(:large_delta, count - 1, deltas, <<acc::binary, raw_delta::16>>)
+    encode_deltas(:large_delta, count - 1, deltas, <<acc::binary, delta::16>>)
   end
 
   @doc false
@@ -86,13 +84,13 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.RunLength do
   defp parse_deltas(:small_delta, raw, 0, acc), do: {:ok, acc, raw}
 
   defp parse_deltas(:small_delta, <<delta::8, rest::binary>>, count, acc) do
-    parse_deltas(:small_delta, rest, count - 1, [delta * 0.25 | acc])
+    parse_deltas(:small_delta, rest, count - 1, [delta | acc])
   end
 
   defp parse_deltas(:large_delta, raw, 0, acc), do: {:ok, acc, raw}
 
   defp parse_deltas(:large_delta, <<delta::16, rest::binary>>, count, acc) do
-    parse_deltas(:large_delta, rest, count - 1, [delta * 0.25 | acc])
+    parse_deltas(:large_delta, rest, count - 1, [delta | acc])
   end
 
   defp parse_deltas(_symbol, _raw, _count, _acc), do: {:error, :invalid_packet}

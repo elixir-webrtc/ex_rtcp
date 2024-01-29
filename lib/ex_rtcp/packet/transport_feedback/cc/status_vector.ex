@@ -49,17 +49,15 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVector do
        do: encode_deltas(symbols, deltas, acc)
 
   defp encode_deltas([:small_delta | symbols], [delta | deltas], acc) do
-    raw_delta = trunc(delta * 4)
-    if raw_delta > 255, do: raise("Delta #{delta} is too big to fit in 1 byte")
+    if delta > 255, do: raise("Delta #{delta} is too big to fit in 1 byte")
 
-    encode_deltas(symbols, deltas, <<acc::binary, raw_delta>>)
+    encode_deltas(symbols, deltas, <<acc::binary, delta>>)
   end
 
   defp encode_deltas([:large_delta | symbols], [delta | deltas], acc) do
-    raw_delta = trunc(delta * 4)
-    if raw_delta > 65_535, do: raise("Delta #{delta} is too big to fit in 2 bytes")
+    if delta > 65_535, do: raise("Delta #{delta} is too big to fit in 2 bytes")
 
-    encode_deltas(symbols, deltas, <<acc::binary, raw_delta::16>>)
+    encode_deltas(symbols, deltas, <<acc::binary, delta::16>>)
   end
 
   @doc false
@@ -95,7 +93,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVector do
 
     case raw do
       <<delta::size(delta_size), rest::binary>> ->
-        parse_deltas(symbols, rest, [delta * 0.25 | acc])
+        parse_deltas(symbols, rest, [delta | acc])
 
       _other ->
         {:error, :invalid_packet}

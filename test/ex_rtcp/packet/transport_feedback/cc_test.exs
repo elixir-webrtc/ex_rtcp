@@ -17,7 +17,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CCTest do
     raw_deltas_1 = for i <- 1..chunk_1_count, do: <<i>>, into: <<>>
 
     chunk_1 = %RunLength{status_symbol: :small_delta, run_length: chunk_1_count}
-    deltas_1 = for i <- 1..chunk_1_count, do: i / 4
+    deltas_1 = for i <- 1..chunk_1_count, do: i
 
     # status vector chunk (mixed packets, two-bit symbols)
     raw_chunk_2 = <<1::1, 1::1, 2::2, 1::2, 2::2, 0::4, 3::2, 3::2>>
@@ -34,7 +34,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CCTest do
     ]
 
     chunk_2 = %StatusVector{symbols: symbols}
-    deltas_2 = [308.5, 27.25, 1375.25]
+    deltas_2 = [1234, 109, 5501]
 
     total_packet_count = chunk_1_count + 7
 
@@ -56,7 +56,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CCTest do
              @media_ssrc::32,
              @base_sequence_number::16,
              total_packet_count::16,
-             div(@reference_time, 64)::signed-24,
+             @reference_time::signed-24,
              @fb_pkt_count::8,
              raw_chunk_1::binary,
              raw_deltas_1::binary,
@@ -72,10 +72,10 @@ defmodule ExRTCP.Packet.TransportFeedback.CCTest do
     # run length chunk (32 packets with small delta)
     chunk_1_count = 32
     raw_chunk_1 = <<0::1, 1::2, chunk_1_count::13>>
-    raw_deltas_1 = for _ <- 1..chunk_1_count, do: <<124>>, into: <<>>
+    raw_deltas_1 = for i <- 1..chunk_1_count, do: <<i>>, into: <<>>
 
     chunk_1 = %RunLength{status_symbol: :small_delta, run_length: chunk_1_count}
-    deltas_1 = for _ <- 1..chunk_1_count, do: 31.0
+    deltas_1 = for i <- 1..chunk_1_count, do: i
 
     # status vector chunk (mixed packets, two-bit symbols)
     raw_chunk_2 = <<1::1, 1::1, 2::2, 1::2, 2::2, 0::4, 3::2, 3::2>>
@@ -92,7 +92,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CCTest do
     ]
 
     chunk_2 = %StatusVector{symbols: symbols}
-    deltas_2 = [308.5, 27.25, 1375.25]
+    deltas_2 = [1234, 109, 5501]
 
     total_packet_count = chunk_1_count + 7
     # need 3 bytes of padding
@@ -101,7 +101,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CCTest do
       @media_ssrc::32,
       @base_sequence_number::16,
       total_packet_count::16,
-      div(@reference_time, 64)::signed-24,
+      @reference_time::signed-24,
       @fb_pkt_count::8,
       raw_chunk_1::binary,
       raw_deltas_1::binary,

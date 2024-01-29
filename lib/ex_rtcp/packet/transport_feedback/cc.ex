@@ -26,14 +26,10 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
   Packet will be properly encoded only if the values are valid. Refer to
   `draft-holmer-rmcat-transport-wide-cc-extensions-01`, sec. 3 to see
   what values are considered valid, here's some important remarks:
-    * `reference_time` and `recv_deltas` values are converted
-    to/from milliseconds when decoding/encoding. Because of that
-    `reference_time` must be a multiple of 64 and `recv_deltas` values
-    must be multiples of 0.25,
-    * length of `recv_deltas` must match number of packets that
-    were described as `:small_delta` or `:large_delta` by the `packet_chunks`
-    * each `recv_deltas` values must fit in 2 bytes (if it's `:large_delta`)
-    or 1 byte (if it's `:small_delta`)
+    * length of `recv_deltas` must match the number of packets that
+    were described as `:small_delta` or `:large_delta` by the `packet_chunks`,
+    * each of `recv_deltas` values must fit in 2 bytes (if it's `:large_delta`)
+    or 1 byte (if it's `:small_delta`).
 
   Trying to encode a packet with invalid values will result in an undefined
   behaviour (most likely `encode/1` will raise).
@@ -43,10 +39,10 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
           media_ssrc: Packet.uint32(),
           base_sequence_number: Packet.uint16(),
           packet_status_count: Packet.uint16(),
-          reference_time: integer(),
+          reference_time: Packet.int24(),
           fb_pkt_count: Packet.uint8(),
           packet_chunks: [RunLength.t() | StatusVector.t()],
-          recv_deltas: [float()]
+          recv_deltas: [Packet.uint8() | Packet.uint16()]
         }
 
   @enforce_keys [
@@ -89,15 +85,13 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
     } = packet
 
     chunks = encode_chunks(packet_chunks, recv_deltas)
-    # reference_time should be interpreted as multiple of 64 ms
-    ref_time = div(reference_time, 64)
 
     encoded = <<
       sender_ssrc::32,
       media_ssrc::32,
       base_sequence_number::16,
       packet_status_count::16,
-      ref_time::signed-24,
+      reference_time::signed-24,
       fb_pkt_count::8,
       chunks::binary
     >>
@@ -140,7 +134,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
         media_ssrc: media_ssrc,
         base_sequence_number: base_sequence_number,
         packet_status_count: packet_status_count,
-        reference_time: reference_time * 64,
+        reference_time: reference_time,
         fb_pkt_count: fb_pkt_count,
         packet_chunks: chunks,
         recv_deltas: deltas

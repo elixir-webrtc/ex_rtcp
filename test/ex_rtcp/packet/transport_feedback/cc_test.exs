@@ -21,7 +21,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CCTest do
 
     # status vector chunk (mixed packets, two-bit symbols)
     raw_chunk_2 = <<1::1, 1::1, 2::2, 1::2, 2::2, 0::4, 3::2, 3::2>>
-    raw_deltas_2 = <<1234::16, 109, 5501::16>>
+    raw_deltas_2 = <<-1234::16, 109, 5501::16>>
 
     symbols = [
       :large_delta,
@@ -34,7 +34,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CCTest do
     ]
 
     chunk_2 = %StatusVector{symbols: symbols}
-    deltas_2 = [1234, 109, 5501]
+    deltas_2 = [-1234, 109, 5501]
 
     total_packet_count = chunk_1_count + 7
 
@@ -79,7 +79,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CCTest do
 
     # status vector chunk (mixed packets, two-bit symbols)
     raw_chunk_2 = <<1::1, 1::1, 2::2, 1::2, 2::2, 0::4, 3::2, 3::2>>
-    raw_deltas_2 = <<1234::16, 109, 5501::16>>
+    raw_deltas_2 = <<-1234::16, 109, 5501::16>>
 
     symbols = [
       :large_delta,
@@ -92,7 +92,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CCTest do
     ]
 
     chunk_2 = %StatusVector{symbols: symbols}
-    deltas_2 = [1234, 109, 5501]
+    deltas_2 = [-1234, 109, 5501]
 
     total_packet_count = chunk_1_count + 7
     # need 3 bytes of padding

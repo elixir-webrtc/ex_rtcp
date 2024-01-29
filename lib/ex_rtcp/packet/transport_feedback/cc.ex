@@ -42,7 +42,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
           reference_time: Packet.int24(),
           fb_pkt_count: Packet.uint8(),
           packet_chunks: [RunLength.t() | StatusVector.t()],
-          recv_deltas: [Packet.uint8() | Packet.uint16()]
+          recv_deltas: [Packet.uint8() | Packet.int16()]
         }
 
   @enforce_keys [

@@ -22,7 +22,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVector do
   defstruct @enforce_keys
 
   @doc false
-  @spec encode(t(), [float()]) :: {binary(), [float()]}
+  @spec encode(t(), [integer()]) :: {binary(), [integer()]}
   def encode(%__MODULE__{symbols: symbols}, deltas) do
     symbol_size =
       case length(symbols) do
@@ -49,19 +49,19 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVector do
        do: encode_deltas(symbols, deltas, acc)
 
   defp encode_deltas([:small_delta | symbols], [delta | deltas], acc) do
-    if delta > 255, do: raise("Delta #{delta} is too big to fit in 1 byte")
+    if delta not in 0..255, do: raise("Delta #{delta} does not fit in 1 byte")
 
     encode_deltas(symbols, deltas, <<acc::binary, delta>>)
   end
 
   defp encode_deltas([:large_delta | symbols], [delta | deltas], acc) do
-    if delta > 65_535, do: raise("Delta #{delta} is too big to fit in 2 bytes")
+    if delta not in -32_768..32_767, do: raise("Delta #{delta} does not fit in 2 bytes")
 
-    encode_deltas(symbols, deltas, <<acc::binary, delta::16>>)
+    encode_deltas(symbols, deltas, <<acc::binary, delta::signed-16>>)
   end
 
   @doc false
-  @spec decode(binary()) :: {:ok, t(), [float()], binary()} | {:error, :invalid_packet}
+  @spec decode(binary()) :: {:ok, t(), [integer()], binary()} | {:error, :invalid_packet}
   def decode(<<1::1, symbol_size::1, symbols::bitstring-14, rest::binary>>) do
     symbols =
       for <<raw_symbol::size(symbol_size + 1) <- symbols>> do
@@ -84,19 +84,17 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.StatusVector do
        when symbol in [:not_received, :no_delta],
        do: parse_deltas(symbols, raw, acc)
 
-  defp parse_deltas([symbol | symbols], raw, acc) do
-    delta_size =
-      case symbol do
-        :small_delta -> 8
-        :large_delta -> 16
-      end
-
+  defp parse_deltas([:small_delta | symbols], raw, acc) do
     case raw do
-      <<delta::size(delta_size), rest::binary>> ->
-        parse_deltas(symbols, rest, [delta | acc])
+      <<delta::8, rest::binary>> -> parse_deltas(symbols, rest, [delta | acc])
+      _other -> {:error, :invalid_packet}
+    end
+  end
 
-      _other ->
-        {:error, :invalid_packet}
+  defp parse_deltas([:large_delta | symbols], raw, acc) do
+    case raw do
+      <<delta::signed-16, rest::binary>> -> parse_deltas(symbols, rest, [delta | acc])
+      _other -> {:error, :invalid_packet}
     end
   end
 end

@@ -5,6 +5,7 @@ defmodule ExRTCP.Packet do
 
   @type uint8() :: 0..255
   @type uint13() :: 0..8191
+  @type int16() :: -32_768..32_767
   @type uint16() :: 0..65_535
   @type int24() :: -8_388_608..8_388_607
   @type uint24() :: 0..16_777_216

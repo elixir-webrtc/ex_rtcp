@@ -53,7 +53,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.RunLengthTest do
     end
 
     test "chunk with `large_delta` symbols" do
-      deltas = for i <- 1..@run_length, do: rem(i * 20, 65_000)
+      deltas = for i <- 1..@run_length, do: rem(i * 20, 32_000)
 
       chunk = %RunLength{
         status_symbol: :large_delta,
@@ -111,7 +111,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC.RunLengthTest do
     end
 
     test "chunk with `large_delta` symbols" do
-      deltas = for i <- 1..@run_length, do: rem(i * 20, 65_000)
+      deltas = for i <- 1..@run_length, do: rem(i * 20, 32_000)
       deltas_raw = for delta <- deltas, do: <<delta::16>>, into: <<>>
       raw = <<0::1, 2::2, @run_length::13, deltas_raw::binary, @rest::binary>>
 

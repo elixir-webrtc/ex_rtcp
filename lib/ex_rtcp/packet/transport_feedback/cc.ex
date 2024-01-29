@@ -23,11 +23,20 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
   Struct representing Transport-wide Congestion Control
   Feedback RTCP packet.
 
-  Be aware that `reference_time` and `recv_deltas` values are converted
-  to/from milliseconds when decoding/encoding. Refer to
+  Packet will be properly encoded only if the values are valid. Refer to
   `draft-holmer-rmcat-transport-wide-cc-extensions-01`, sec. 3 to see
-  what values are considered valid. Trying to encode a packet with invalid values
-  will result in an undefined behaviour.
+  what values are considered valid, here's some important remarks:
+    * `reference_time` and `recv_deltas` values are converted
+    to/from milliseconds when decoding/encoding. Because of that
+    `reference_time` must be a multiple of 64 and `recv_deltas` values
+    must be multiples of 0.25,
+    * length of `recv_deltas` must match number of packets that
+    were described as `:small_delta` or `:large_delta` by the `packet_chunks`
+    * each `recv_deltas` values must fit in 2 bytes (if it's `:large_delta`)
+    or 1 byte (if it's `:small_delta`)
+
+  Trying to encode a packet with invalid values will result in an undefined
+  behaviour (most likely `encode/1` will raise).
   """
   @type t() :: %__MODULE__{
           sender_ssrc: Packet.uint32(),
@@ -46,11 +55,9 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
     :base_sequence_number,
     :packet_status_count,
     :reference_time,
-    :fb_pkt_count,
-    :packet_chunks,
-    :recv_deltas
+    :fb_pkt_count
   ]
-  defstruct @enforce_keys
+  defstruct @enforce_keys ++ [packet_chunks: [], recv_deltas: []]
 
   @behaviour ExRTCP.PacketTranscoder
 
@@ -106,7 +113,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
   end
 
   defp encode_chunks(chunks, deltas, acc \\ <<>>)
-  defp encode_chunks([], _deltas, acc), do: acc
+  defp encode_chunks([], [], acc), do: acc
 
   defp encode_chunks([chunk | chunks], deltas, acc) do
     %module{} = chunk

@@ -3,9 +3,9 @@ defmodule ExRTCP.Packet.SourceDescription do
   Source Description RTCP packet type (`RFC 3550`).
   """
 
-  @behaviour ExRTCP.PacketTranscoder
-
   alias ExRTCP.Packet.SourceDescription.Chunk
+
+  @behaviour ExRTCP.PacketTranscoder
 
   @packet_type 202
 

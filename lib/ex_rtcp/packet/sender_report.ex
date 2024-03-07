@@ -3,10 +3,10 @@ defmodule ExRTCP.Packet.SenderReport do
   Sender Report RTCP packet type (`RFC 3550`).
   """
 
-  @behaviour ExRTCP.PacketTranscoder
-
   alias ExRTCP.Packet
   alias ExRTCP.Packet.ReceptionReport
+
+  @behaviour ExRTCP.PacketTranscoder
 
   @packet_type 200
 

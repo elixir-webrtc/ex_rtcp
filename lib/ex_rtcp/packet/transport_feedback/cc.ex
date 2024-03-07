@@ -7,6 +7,8 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
   alias __MODULE__.{RunLength, StatusVector}
   alias ExRTCP.Packet
 
+  @behaviour ExRTCP.PacketTranscoder
+
   @packet_type 205
   @feedback_type 15
 
@@ -54,8 +56,6 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
     :fb_pkt_count
   ]
   defstruct @enforce_keys ++ [packet_chunks: [], recv_deltas: []]
-
-  @behaviour ExRTCP.PacketTranscoder
 
   @doc false
   @spec get_status_symbol(0..3) :: status_symbol()

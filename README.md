@@ -9,7 +9,13 @@ Implementation of the RTCP protocol in Elixir.
 
 Implements packet types from:
 - [RFC 3550 - RTP: A Transport Protocol for Real-Time Applications](https://datatracker.ietf.org/doc/html/rfc3550)
+- [RFC 4585 - Extended RTP Profile for Real-time Transport Control Protocol (RTCP)-Based Feedback (RTP/AVPF)](https://datatracker.ietf.org/doc/html/rfc4585)
+- [RFC 5104 - Codec Control Messages in the RTP Audio-Visual Profile with Feedback (AVPF)](https://datatracker.ietf.org/doc/html/rfc5104)
 - [RTP Extensions for Transport-wide Congestion Control](https://datatracker.ietf.org/doc/html/draft-holmer-rmcat-transport-wide-cc-extensions-01)
+
+For complete list of supported packet types, refer to the [documentation](https://hexdocs.pm/ex_rtcp/readme.html).
+
+See [documentation page](https://hexdocs.pm/ex_rtcp/ExRTCP.Packet.html) of `ExRTCP.Packet` for usage examples.
 
 ## Installation
 

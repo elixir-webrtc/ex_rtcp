@@ -1,6 +1,20 @@
 defmodule ExRTCP.Packet do
   @moduledoc """
   RTCP packet encoding and decoding functionalities.
+
+  ## Examples
+
+    ```elixir
+    iex> packet = %ExRTCP.Packet.SenderReport{
+    ...>   ssrc: 123_456,
+    ...>   ntp_timestamp: 5_000_000,
+    ...>   rtp_timestamp: 436_133,
+    ...>   packet_count: 5,
+    ...>   octet_count: 89
+    ...> }
+    iex> encoded = ExRTCP.Packet.encode(packet, padding: 8)
+    iex> {:ok, ^packet} = ExRTCP.Packet.decode(encoded)
+    ```
   """
 
   @type uint8() :: 0..255

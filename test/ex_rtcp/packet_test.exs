@@ -1,5 +1,6 @@
 defmodule ExRTCP.PacketTest do
   use ExUnit.Case, async: true
+  doctest ExRTCP.Packet
 
   alias ExRTCP.Packet
   alias ExRTCP.Packet.Goodbye

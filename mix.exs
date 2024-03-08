@@ -10,7 +10,7 @@ defmodule ExRTCP.MixProject do
       version: @version,
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
-      description: "Implementation of RTCP protocol",
+      description: "Implementation of the RTCP protocol",
       package: package(),
       deps: deps(),
 
@@ -58,9 +58,15 @@ defmodule ExRTCP.MixProject do
       extras: ["README.md"],
       source_ref: "v#{@version}",
       formatters: ["html"],
-      nest_modules_by_prefix: [ExRTCP, ExRTCP.Packet],
+      nest_modules_by_prefix: [
+        ExRTCP.Packet,
+        ExRTCP.Packet.TransportFeedback,
+        ExRTCP.Packet.PayloadFeedback
+      ],
       groups_for_modules: [
-        Packets: [~r/ExRTCP\.Packet\./]
+        "Transport layer feedbacks": ~r/ExRTCP\.Packet\.TransportFeedback/,
+        "Payload-specific feedbacks": ~r/ExRTCP\.Packet\.PayloadFeedback/,
+        "Original (RFC 3550)": ~r/ExRTCP\.Packet\./
       ]
     ]
   end

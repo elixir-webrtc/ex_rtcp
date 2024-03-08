@@ -17,6 +17,7 @@ defmodule ExRTCP.Packet do
           | __MODULE__.ReceiverReport.t()
           | __MODULE__.SourceDescription.t()
           | __MODULE__.Goodbye.t()
+          | __MODULE__.TransportFeedback.NACK.t()
           | __MODULE__.TransportFeedback.CC.t()
 
   @typedoc """
@@ -87,6 +88,7 @@ defmodule ExRTCP.Packet do
   defp get_type_module(201, _count), do: {:ok, __MODULE__.ReceiverReport}
   defp get_type_module(202, _count), do: {:ok, __MODULE__.SourceDescription}
   defp get_type_module(203, _count), do: {:ok, __MODULE__.Goodbye}
+  defp get_type_module(205, 1), do: {:ok, __MODULE__.TransportFeedback.NACK}
   defp get_type_module(205, 15), do: {:ok, __MODULE__.TransportFeedback.CC}
   defp get_type_module(_type, _count), do: {:error, :unknown_type}
 end

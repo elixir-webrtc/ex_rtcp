@@ -19,6 +19,7 @@ defmodule ExRTCP.Packet do
           | __MODULE__.Goodbye.t()
           | __MODULE__.TransportFeedback.NACK.t()
           | __MODULE__.TransportFeedback.CC.t()
+          | __MODULE__.PayloadFeedback.FIR.t()
 
   @typedoc """
   Possible `decode/1` errors.
@@ -90,5 +91,6 @@ defmodule ExRTCP.Packet do
   defp get_type_module(203, _count), do: {:ok, __MODULE__.Goodbye}
   defp get_type_module(205, 1), do: {:ok, __MODULE__.TransportFeedback.NACK}
   defp get_type_module(205, 15), do: {:ok, __MODULE__.TransportFeedback.CC}
+  defp get_type_module(206, 4), do: {:ok, __MODULE__.PayloadFeedback.FIR}
   defp get_type_module(_type, _count), do: {:error, :unknown_type}
 end

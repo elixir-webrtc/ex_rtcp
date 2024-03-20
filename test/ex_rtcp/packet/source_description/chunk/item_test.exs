@@ -32,7 +32,7 @@ defmodule ExRTCP.Packet.SourceDescription.Chunk.ItemTest do
       mid = "1234"
       mid_len = byte_size(mid)
       item = %Item{type: :mid, text: mid}
-      assert <<15, ^mid_len, ^mid::binary>> = Item.encode(item)
+      assert <<15, mid_len, mid::binary>> == Item.encode(item)
     end
   end
 

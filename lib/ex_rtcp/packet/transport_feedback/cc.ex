@@ -4,8 +4,56 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
   (`draft-holmer-rmcat-transport-wide-cc-extensions-01`).
   """
 
-  alias __MODULE__.{RunLength, StatusVector}
   alias ExRTCP.Packet
+
+  @type siema() :: atom()
+
+  defmodule RunLength do
+    @moduledoc """
+    Run Length chunk contained by Transport-wide
+    Congestion Control RTCP packets.
+    """
+
+    alias ExRTCP.Packet.TransportFeedback.CC
+
+    @typedoc """
+    Struct representing the Run Length chunk.
+
+    See `draft-holmer-rmcat-transport-wide-cc-extensions-01`,
+    sec. 3.1.3 for further explanation.
+    """
+    @type t() :: %__MODULE__{
+            status_symbol: CC.status_symbol(),
+            run_length: Packet.uint13()
+          }
+
+    @enforce_keys [:status_symbol, :run_length]
+    defstruct @enforce_keys
+  end
+
+  defmodule StatusVector do
+    @moduledoc """
+    Status Vector chunk contained by Transport-wide
+    Congestion Control RTCP packets.
+    """
+
+    alias ExRTCP.Packet.TransportFeedback.CC
+
+    @typedoc """
+    Struct representing the Status Vector chunk.
+
+    `symbols` list length must be equal to either `7` or `14`.
+
+    See `draft-holmer-rmcat-transport-wide-cc-extensions-01`,
+    sec. 3.1.4 for further explanation.
+    """
+    @type t() :: %__MODULE__{
+            symbols: [CC.status_symbol()]
+          }
+
+    @enforce_keys [:symbols]
+    defstruct @enforce_keys
+  end
 
   @behaviour ExRTCP.PacketTranscoder
 
@@ -28,6 +76,8 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
   Packet will be properly encoded only if the values are valid. Refer to
   `draft-holmer-rmcat-transport-wide-cc-extensions-01`, sec. 3 to see
   what values are considered valid, here's some important remarks:
+    * `packet_status_count` must match the actual number of packets described
+    by the feedback,
     * length of `recv_deltas` must match the number of packets that
     were described as `:small_delta` or `:large_delta` by the `packet_chunks`,
     * each of `recv_deltas` values must fit in 2 bytes (if it's `:large_delta`)
@@ -55,21 +105,10 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
     :reference_time,
     :fb_pkt_count
   ]
-  defstruct @enforce_keys ++ [packet_chunks: [], recv_deltas: []]
-
-  @doc false
-  @spec get_status_symbol(0..3) :: status_symbol()
-  def get_status_symbol(0b00), do: :not_received
-  def get_status_symbol(0b01), do: :small_delta
-  def get_status_symbol(0b10), do: :large_delta
-  def get_status_symbol(0b11), do: :no_delta
-
-  @doc false
-  @spec get_status_raw(status_symbol()) :: 0..3
-  def get_status_raw(:not_received), do: 0b00
-  def get_status_raw(:small_delta), do: 0b01
-  def get_status_raw(:large_delta), do: 0b10
-  def get_status_raw(:no_delta), do: 0b11
+  defstruct [
+              packet_chunks: [],
+              recv_deltas: []
+            ] ++ @enforce_keys
 
   @impl true
   def encode(packet) do
@@ -84,7 +123,9 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
       recv_deltas: recv_deltas
     } = packet
 
-    chunks = encode_chunks(packet_chunks, recv_deltas)
+    chunks = encode_chunks(packet_chunks)
+    delta_symbols = get_delta_symbols(packet_chunks)
+    deltas = encode_deltas(delta_symbols, recv_deltas)
 
     encoded = <<
       sender_ssrc::32,
@@ -93,7 +134,8 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
       packet_status_count::16,
       reference_time::signed-24,
       fb_pkt_count::8,
-      chunks::binary
+      chunks::binary,
+      deltas::binary
     >>
 
     padding =
@@ -106,13 +148,51 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
     {encoded <> padding, @feedback_type, @packet_type}
   end
 
-  defp encode_chunks(chunks, deltas, acc \\ <<>>)
-  defp encode_chunks([], [], acc), do: acc
+  defp encode_chunks(chunks, acc \\ <<>>)
+  defp encode_chunks([], acc), do: acc
 
-  defp encode_chunks([chunk | chunks], deltas, acc) do
-    %module{} = chunk
-    {raw_chunk, rest_deltas} = module.encode(chunk, deltas)
-    encode_chunks(chunks, rest_deltas, acc <> raw_chunk)
+  defp encode_chunks([%RunLength{status_symbol: symbol, run_length: len} | chunks], acc) do
+    encoded_symbol = get_status_raw(symbol)
+    encoded_chunk = <<0::1, encoded_symbol::2, len::13>>
+
+    encode_chunks(chunks, acc <> encoded_chunk)
+  end
+
+  defp encode_chunks([%StatusVector{symbols: symbols} | chunks], acc) do
+    symbol_size =
+      case length(symbols) do
+        14 -> 0
+        7 -> 1
+        _other -> raise "Length of symbols in StatusVector chunk must be equal to either 7 or 14"
+      end
+
+    encoded_symbols =
+      for symbol <- symbols, into: <<>> do
+        <<get_status_raw(symbol)::size(symbol_size + 1)>>
+      end
+
+    encoded_chunk = <<1::1, symbol_size::1, encoded_symbols::bitstring>>
+
+    encode_chunks(chunks, acc <> encoded_chunk)
+  end
+
+  defp encode_deltas(delta_symbols, deltas, acc \\ <<>>)
+  defp encode_deltas([], [], acc), do: acc
+
+  defp encode_deltas([symbol | symbols], deltas, acc)
+       when symbol in [:not_received, :no_delta],
+       do: encode_deltas(symbols, deltas, acc)
+
+  defp encode_deltas([:small_delta | symbols], [delta | deltas], acc) do
+    if delta not in 0..255, do: raise("Delta #{delta} does not fit in 1 byte")
+
+    encode_deltas(symbols, deltas, <<acc::binary, delta::8>>)
+  end
+
+  defp encode_deltas([:large_delta | symbols], [delta | deltas], acc) do
+    if delta not in -32_768..32_767, do: raise("Delta #{delta} does not fit in 2 bytes")
+
+    encode_deltas(symbols, deltas, <<acc::binary, delta::signed-16>>)
   end
 
   @impl true
@@ -128,7 +208,9 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
         >>,
         _count
       ) do
-    with {:ok, chunks, deltas} <- decode_chunks(rest, packet_status_count) do
+    with {:ok, chunks, rest} <- decode_chunks(rest, packet_status_count),
+         delta_symbols <- get_delta_symbols(chunks) |> Enum.take(packet_status_count),
+         {:ok, deltas} <- decode_deltas(delta_symbols, rest) do
       packet = %__MODULE__{
         sender_ssrc: sender_ssrc,
         media_ssrc: media_ssrc,
@@ -146,31 +228,58 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
 
   def decode(_raw, _count), do: {:error, :invalid_packet}
 
-  defp decode_chunks(raw, count, chunks \\ [], deltas \\ [])
+  defp decode_chunks(raw, count, acc \\ [])
+  defp decode_chunks(raw, count, acc) when count <= 0, do: {:ok, Enum.reverse(acc), raw}
 
-  # in theory, after chunks are processed, count should be 0
-  # but we also accept values < 0 (so when there's more packets than header suggests)
-  # we also ignore anything after the last chunk, which normally would be padded to 32 bit boundary
-  defp decode_chunks(_raw, count, chunks, deltas) when count <= 0,
-    do: {:ok, Enum.reverse(chunks), Enum.reverse(deltas)}
+  defp decode_chunks(<<0::1, symbol::2, run_length::13, rest::binary>>, count, acc) do
+    status_symbol = get_status_symbol(symbol)
+    chunk = %RunLength{status_symbol: status_symbol, run_length: run_length}
 
-  defp decode_chunks(<<type::1, _rest::bitstring>> = raw, count, chunks, deltas) do
-    module =
-      case type do
-        0 -> RunLength
-        1 -> StatusVector
-      end
-
-    with {:ok, chunk, chunk_deltas, rest} <- module.decode(raw) do
-      count_diff =
-        case chunk do
-          %RunLength{run_length: rl} -> rl
-          %StatusVector{symbols: s} -> length(s)
-        end
-
-      decode_chunks(rest, count - count_diff, [chunk | chunks], chunk_deltas ++ deltas)
-    end
+    decode_chunks(rest, count - run_length, [chunk | acc])
   end
 
-  defp decode_chunks(_raw, _count, _chunks, _deltas), do: {:error, :invalid_packet}
+  defp decode_chunks(<<1::1, symbol_size::1, list::bitstring-14, rest::binary>>, count, acc) do
+    symbols =
+      for <<raw_symbol::size(symbol_size + 1) <- list>> do
+        get_status_symbol(raw_symbol)
+      end
+
+    chunk = %StatusVector{symbols: symbols}
+
+    decode_chunks(rest, count - length(symbols), [chunk | acc])
+  end
+
+  defp decode_chunks(_raw, _count, _chunks), do: {:error, :invalid_packet}
+
+  defp decode_deltas(delta_symbols, raw, acc \\ [])
+  defp decode_deltas([], _raw, acc), do: {:ok, Enum.reverse(acc)}
+
+  defp decode_deltas([symbol | symbols], raw, acc)
+       when symbol in [:not_received, :no_delta],
+       do: decode_deltas(symbols, raw, acc)
+
+  defp decode_deltas([:small_delta | symbols], <<delta::8, rest::binary>>, acc),
+    do: decode_deltas(symbols, rest, [delta | acc])
+
+  defp decode_deltas([:large_delta | symbols], <<delta::signed-16, rest::binary>>, acc),
+    do: decode_deltas(symbols, rest, [delta | acc])
+
+  defp decode_deltas(_symbols, _raw, _acc), do: {:error, :invalid_packet}
+
+  defp get_delta_symbols(chunks) do
+    Enum.flat_map(chunks, fn
+      %RunLength{status_symbol: symbol, run_length: len} -> List.duplicate(symbol, len)
+      %StatusVector{symbols: symbols} -> symbols
+    end)
+  end
+
+  defp get_status_symbol(0b00), do: :not_received
+  defp get_status_symbol(0b01), do: :small_delta
+  defp get_status_symbol(0b10), do: :large_delta
+  defp get_status_symbol(0b11), do: :no_delta
+
+  defp get_status_raw(:not_received), do: 0b00
+  defp get_status_raw(:small_delta), do: 0b01
+  defp get_status_raw(:large_delta), do: 0b10
+  defp get_status_raw(:no_delta), do: 0b11
 end

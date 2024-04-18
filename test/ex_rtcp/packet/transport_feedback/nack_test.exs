@@ -21,6 +21,21 @@ defmodule ExRTCP.Packet.TransportFeedback.NACKTest do
     assert %{pid: 153, blp: <<0::16>>} == nack3
   end
 
+  test "to_sequence_numbers/1" do
+    nack1 = %{pid: 100, blp: <<1::1, 0::2, 1::1, 0::9, 1::1, 0::2>>}
+    nack2 = %{pid: 117, blp: <<0::8, 1::1, 0::7>>}
+    nack3 = %{pid: 153, blp: <<0::16>>}
+
+    packet = %NACK{
+      sender_ssrc: @sender_ssrc,
+      media_ssrc: @media_ssrc,
+      nacks: [nack1, nack2, nack3]
+    }
+
+    seq_nums = NACK.to_sequence_numbers(packet)
+    assert seq_nums == [100, 103, 113, 116, 117, 125, 153]
+  end
+
   test "encode/1" do
     pid_1 = 35_042
     blp_1 = <<5, 1>>

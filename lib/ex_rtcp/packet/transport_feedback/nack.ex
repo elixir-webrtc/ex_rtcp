@@ -69,6 +69,23 @@ defmodule ExRTCP.Packet.TransportFeedback.NACK do
     create_nacks(sns, [%{pid: pid, blp: <<blp::16>>} | nacks])
   end
 
+  @doc """
+  Creates a list of sequence numbers from `t:t/0`.
+  """
+  @spec to_sequence_numbers(t()) :: [Packet.uint16()]
+  def to_sequence_numbers(packet) do
+    Enum.flat_map(packet.nacks, fn nack ->
+      lost =
+        for(<<bit::1 <- nack.blp>>, do: bit)
+        |> Enum.reverse()
+        |> Enum.with_index()
+        |> Enum.filter(fn {v, _i} -> v == 1 end)
+        |> Enum.map(fn {_v, i} -> nack.pid + i + 1 end)
+
+      [nack.pid | lost]
+    end)
+  end
+
   @impl true
   def encode(packet) do
     %__MODULE__{

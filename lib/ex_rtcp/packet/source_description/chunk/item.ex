@@ -18,6 +18,8 @@ defmodule ExRTCP.Packet.SourceDescription.Chunk.Item do
           | :note
           | :priv
           | :mid
+          | :rtp_stream_id
+          | :repaired_rtp_stream_id
 
   @typedoc """
   Struct representing item contained by chunks in Source Description RTCP packets.
@@ -48,6 +50,8 @@ defmodule ExRTCP.Packet.SourceDescription.Chunk.Item do
   defp type_to_id(:tool), do: 6
   defp type_to_id(:note), do: 7
   defp type_to_id(:priv), do: 8
+  defp type_to_id(:rtp_stream_id), do: 12
+  defp type_to_id(:repaired_rtp_stream_id), do: 13
   defp type_to_id(:mid), do: 15
 
   @doc false
@@ -72,6 +76,8 @@ defmodule ExRTCP.Packet.SourceDescription.Chunk.Item do
   defp id_to_type(6), do: :tool
   defp id_to_type(7), do: :note
   defp id_to_type(8), do: :priv
+  defp id_to_type(12), do: :rtp_stream_id
+  defp id_to_type(13), do: :repaired_rtp_stream_id
   defp id_to_type(15), do: :mid
   defp id_to_type(_other), do: nil
 end

@@ -28,11 +28,15 @@ defmodule ExRTCP.Packet.SourceDescription.Chunk.ItemTest do
       end
     end
 
-    test "MID item" do
-      mid = "1234"
-      mid_len = byte_size(mid)
-      item = %Item{type: :mid, text: mid}
-      assert <<15, mid_len, mid::binary>> == Item.encode(item)
+    test "non-RFC 3550 item types" do
+      types = [rtp_stream_id: 12, repaired_rtp_stream_id: 13, mid: 15]
+
+      for {item_type, item_id} <- types do
+        text = "123"
+        text_len = byte_size(text)
+        item = %Item{type: item_type, text: text}
+        assert <<item_id, text_len, text::binary>> == Item.encode(item)
+      end
     end
   end
 
@@ -57,11 +61,15 @@ defmodule ExRTCP.Packet.SourceDescription.Chunk.ItemTest do
       end
     end
 
-    test "MID item" do
-      mid = <<1, 2, 3>>
-      item = <<15, byte_size(mid), mid::binary>>
+    test "non-RFC 3550 item types" do
+      types = [rtp_stream_id: 12, repaired_rtp_stream_id: 13, mid: 15]
 
-      assert {:ok, %Item{type: :mid, text: ^mid}, <<>>} = Item.decode(item)
+      for {item_type, item_id} <- types do
+        text = "123"
+        text_len = byte_size(text)
+        item = <<item_id, text_len, text::binary>>
+        assert {:ok, %Item{type: ^item_type, text: ^text}, <<>>} = Item.decode(item)
+      end
     end
 
     test "invalid item" do

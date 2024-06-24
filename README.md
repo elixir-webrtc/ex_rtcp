@@ -25,7 +25,7 @@ Add `ex_rtcp` to dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_rtcp, "~> 0.3.0"}
+    {:ex_rtcp, "~> 0.4.0"}
   ]
 end
 ```

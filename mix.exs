@@ -1,7 +1,7 @@
 defmodule ExRTCP.MixProject do
   use Mix.Project
 
-  @version "0.3.0"
+  @version "0.4.0"
   @source_url "https://github.com/elixir-webrtc/ex_rtcp"
 
   def project do
@@ -51,7 +51,7 @@ defmodule ExRTCP.MixProject do
 
   defp deps do
     [
-      {:excoveralls, "~> 0.14", only: [:dev, :test], runtime: false},
+      {:excoveralls, "~> 0.18", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}

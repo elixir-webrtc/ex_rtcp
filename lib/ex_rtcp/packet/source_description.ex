@@ -31,7 +31,7 @@ defmodule ExRTCP.Packet.SourceDescription do
   def decode(raw, count) do
     case do_decode(raw, count) do
       {:ok, chunks} -> {:ok, %__MODULE__{chunks: chunks}}
-      {:error, _reson} = err -> err
+      {:error, _reason} = err -> err
     end
   end
 

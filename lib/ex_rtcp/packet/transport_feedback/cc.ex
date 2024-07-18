@@ -6,8 +6,6 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
 
   alias ExRTCP.Packet
 
-  @type siema() :: atom()
-
   defmodule RunLength do
     @moduledoc """
     Run Length chunk contained by Transport-wide

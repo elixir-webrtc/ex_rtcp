@@ -68,4 +68,17 @@ defmodule ExRTCP.PacketTest do
       assert {:error, :unknown_type} = Packet.decode(bin)
     end
   end
+
+  describe "encode/decode" do
+    test "Encode decode" do
+      original_packet = %Goodbye{
+        sources: [12345, 67890],
+        reason: "Session ended"
+      }
+
+      encoded = Packet.encode(original_packet)
+      assert {:ok, decoded_packet} = Packet.decode(encoded)
+      assert original_packet == decoded_packet
+    end
+  end
 end

@@ -23,7 +23,7 @@ defmodule ExRTCP.Packet.GoodbyeTest do
 
     test "packet with reason" do
       sources = [@ssrc, @ssrc + 1, @ssrc + 2]
-      reason = "1234"
+      reason = "123"
 
       packet = %Goodbye{
         sources: sources,
@@ -31,6 +31,7 @@ defmodule ExRTCP.Packet.GoodbyeTest do
       }
 
       assert {encoded, 3, 203} = Goodbye.encode(packet)
+      assert rem(byte_size(encoded), 4) == 0
 
       bin = for i <- sources, do: <<i::32>>, into: <<>>
       bin = <<bin::binary, byte_size(reason)::8, reason::binary>>
@@ -40,7 +41,7 @@ defmodule ExRTCP.Packet.GoodbyeTest do
 
     test "packet with reason that's not multiple of 32 bits" do
       sources = [@ssrc, @ssrc + 1, @ssrc + 2]
-      reason = "123456"
+      reason = "1234"
 
       packet = %Goodbye{
         sources: sources,
@@ -48,9 +49,10 @@ defmodule ExRTCP.Packet.GoodbyeTest do
       }
 
       assert {encoded, 3, 203} = Goodbye.encode(packet)
+      assert rem(byte_size(encoded), 4) == 0
 
       bin = for i <- sources, do: <<i::32>>, into: <<>>
-      bin = <<bin::binary, byte_size(reason)::8, reason::binary, 0, 0>>
+      bin = <<bin::binary, byte_size(reason)::8, reason::binary, 0, 0, 0>>
 
       assert encoded == bin
     end

@@ -40,7 +40,7 @@ defmodule ExRTCP.Packet.Goodbye do
     len = byte_size(reason)
 
     pad_len =
-      case rem(len, 4) do
+      case rem(len + 1, 4) do
         0 -> 0
         other -> 4 - other
       end

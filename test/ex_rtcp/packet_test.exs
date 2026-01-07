@@ -72,7 +72,7 @@ defmodule ExRTCP.PacketTest do
   describe "encode/decode" do
     test "Encode decode" do
       original_packet = %Goodbye{
-        sources: [12345, 67890],
+        sources: [12_345, 67_890],
         reason: "Session ended"
       }
 

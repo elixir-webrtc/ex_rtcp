@@ -53,7 +53,7 @@ defmodule ExRTCP.CompoundPacket do
 
   defp get_packet(<<_::16, len::16, _::binary>> = raw) do
     case raw do
-      <<packet::binary-size((len + 1) * 4), rest::binary>> ->
+      <<packet::binary-size((^len + 1) * 4), rest::binary>> ->
         case Packet.decode(packet) do
           {:ok, packet} -> {:ok, packet, rest}
           {:error, :unknown_type} -> {:ok, :unknown_type, rest}

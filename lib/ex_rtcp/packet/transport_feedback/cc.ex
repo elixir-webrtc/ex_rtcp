@@ -238,7 +238,7 @@ defmodule ExRTCP.Packet.TransportFeedback.CC do
 
   defp decode_chunks(<<1::1, symbol_size::1, list::bitstring-14, rest::binary>>, count, acc) do
     symbols =
-      for <<raw_symbol::size(symbol_size + 1) <- list>> do
+      for <<raw_symbol::size(^symbol_size + 1) <- list>> do
         get_status_symbol(raw_symbol)
       end
 

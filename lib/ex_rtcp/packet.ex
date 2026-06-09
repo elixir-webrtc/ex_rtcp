@@ -92,8 +92,8 @@ defmodule ExRTCP.Packet do
   defp strip_padding(raw) do
     size = byte_size(raw)
 
-    with <<_rest::binary-size(size - 1), len>> <- raw,
-         <<rest::binary-size(size - len), _rest::binary>> <- raw do
+    with <<_rest::binary-size(^size - 1), len>> <- raw,
+         <<rest::binary-size(^size - ^len), _rest::binary>> <- raw do
       {:ok, rest}
     else
       _other -> {:error, :invalid_packet}
